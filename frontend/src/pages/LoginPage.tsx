@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import { Icon } from '../components/ui/Icon';
@@ -9,8 +9,11 @@ interface LoginForm { email: string; password: string; }
 
 export function LoginPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>();
-  const { login } = useAuth();
+  const { login, accessToken, user, isInitializing } = useAuth();
   const navigate = useNavigate();
+
+  if (isInitializing) return null;
+  if (accessToken) return <Navigate to={user?.role === 'admin' ? '/users' : '/profile'} replace />;
   const [serverError, setServerError] = useState('');
   const [showPass, setShowPass] = useState(false);
 

@@ -21,10 +21,10 @@ export function UserFormPage() {
 
   useEffect(() => {
     if (!isEdit) return;
-    api.get(`/api/users/${id}`).then(res =>
-      reset({ name: res.data.name, email: res.data.email, role: res.data.role, password: '' })
-    );
-  }, [id, isEdit, reset]);
+    api.get(`/api/users/${id}`)
+      .then(res => reset({ name: res.data.name, email: res.data.email, role: res.data.role, password: '' }))
+      .catch(() => navigate('/users'));
+  }, [id, isEdit, reset, navigate]);
 
   const onSubmit = async (data: UserForm) => {
     setServerError('');

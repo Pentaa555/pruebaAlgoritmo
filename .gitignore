@@ -10,6 +10,7 @@ backend/**/appsettings.*.json
 .env
 .env.*
 !.env.example
+!frontend/.env.production
 
 ## Node
 frontend/node_modules/
