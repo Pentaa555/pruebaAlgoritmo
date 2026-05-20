@@ -64,7 +64,7 @@ public class UserService(IUserRepository users, IPasswordService password) : IUs
         {
             if (dto.Email != null) user.Email = dto.Email.ToLowerInvariant();
             if (dto.Role != null) user.Role = dto.Role;
-            if (dto.Password != null) user.PasswordHash = password.Hash(dto.Password);
+            if (dto.NewPassword != null) user.PasswordHash = password.Hash(dto.NewPassword);
         }
 
         user.UpdatedAt = DateTime.UtcNow;

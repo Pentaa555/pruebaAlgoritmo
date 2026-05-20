@@ -11,6 +11,8 @@ public class UpdateUserDto
 
     public string? Role { get; init; }
 
+    public string? CurrentPassword { get; init; }
+
     [MinLength(8)]
-    public string? Password { get; init; }
+    public string? NewPassword { get; init; }
 }
