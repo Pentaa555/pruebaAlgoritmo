@@ -82,8 +82,34 @@ frontend/src/
   api/                    Instancia de Axios con interceptor de refresco de token
   context/                AuthContext (estado del usuario, login/logout)
   components/             Guards de rutas, navbar de Layout
-  pages/                  Login, Register, Users, UserForm, Profile
+  pages/                  Login, Register, Users, UserForm, UserDetail, Profile
 ```
+
+## Rutas del frontend
+
+| Ruta | Acceso | Descripción |
+|---|---|---|
+| `/login` | Público | Inicio de sesión |
+| `/register` | Público | Registro de cuenta |
+| `/users` | Admin | Tabla de usuarios con búsqueda y paginación |
+| `/users/new` | Admin | Crear nuevo usuario |
+| `/users/:id` | Admin | Ver detalle de usuario |
+| `/users/:id/edit` | Admin | Editar usuario |
+| `/profile` | Autenticado | Ver y editar perfil propio |
+
+## Endpoints API
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| POST | `/api/auth/register` | Público | Registrar usuario |
+| POST | `/api/auth/login` | Público | Iniciar sesión → `{ accessToken, refreshToken, user }` |
+| POST | `/api/auth/refresh` | Público | Renovar access token |
+| POST | `/api/auth/logout` | Autenticado | Revocar refresh token |
+| GET | `/api/users?search=&role=&isActive=&page=&size=` | Admin | Listar usuarios paginados |
+| GET | `/api/users/:id` | Admin o dueño | Ver usuario |
+| POST | `/api/users` | Admin | Crear usuario |
+| PUT | `/api/users/:id` | Admin o dueño | Actualizar usuario |
+| DELETE | `/api/users/:id` | Admin | Eliminar usuario (lógico) |
 
 ## Seguridad
 
