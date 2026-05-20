@@ -66,6 +66,12 @@ public class UserService(IUserRepository users, IPasswordService password) : IUs
             if (dto.Role != null) user.Role = dto.Role;
             if (dto.NewPassword != null) user.PasswordHash = password.Hash(dto.NewPassword);
         }
+        else if (dto.NewPassword != null)
+        {
+            if (dto.CurrentPassword == null || !password.Verify(dto.CurrentPassword, user.PasswordHash))
+                throw new UnauthorizedException("Incorrect current password.");
+            user.PasswordHash = password.Hash(dto.NewPassword);
+        }
 
         user.UpdatedAt = DateTime.UtcNow;
         await users.UpdateAsync(user);
