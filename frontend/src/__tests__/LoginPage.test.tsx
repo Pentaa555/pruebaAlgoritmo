@@ -14,6 +14,7 @@ const mockLogin = vi.fn();
 const mockCtx = {
   user: null,
   accessToken: null,
+  isInitializing: false,
   login: mockLogin,
   logout: vi.fn(),
   updateUser: vi.fn(),
