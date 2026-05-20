@@ -22,6 +22,7 @@ logs/
 
 ## Superpowers
 .superpowers/
+docs/superpowers/
 
 ## OS
 .DS_Store
