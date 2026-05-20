@@ -92,4 +92,52 @@ public class UserServiceTests
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             _sut.UpdateAsync(user.Id, new UpdateUserDto { Name = "X" }, Guid.NewGuid(), "user"));
     }
+
+    [Fact]
+    public async Task UpdateAsync_UserRole_OwnId_WithCorrectCurrentPassword_ChangesHash()
+    {
+        var id = Guid.NewGuid();
+        var user = new User { Id = id, Name = "Old", PasswordHash = "oldhash", IsActive = true };
+        _userRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+        _userRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _password.Setup(p => p.Verify("correct", "oldhash")).Returns(true);
+        _password.Setup(p => p.Hash("newpass12")).Returns("newhash");
+
+        var dto = new UpdateUserDto { Name = "Old", CurrentPassword = "correct", NewPassword = "newpass12" };
+        await _sut.UpdateAsync(id, dto, id, "user");
+
+        _userRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.PasswordHash == "newhash")), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_UserRole_OwnId_WithWrongCurrentPassword_ThrowsUnauthorized()
+    {
+        var id = Guid.NewGuid();
+        var user = new User { Id = id, Name = "Old", PasswordHash = "oldhash", IsActive = true };
+        _userRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(user);
+        _password.Setup(p => p.Verify("wrong", "oldhash")).Returns(false);
+
+        var dto = new UpdateUserDto { Name = "Old", CurrentPassword = "wrong", NewPassword = "newpass12" };
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            _sut.UpdateAsync(id, dto, id, "user"));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_AdminRole_WithNewPasswordOnly_ChangesHash()
+    {
+        var userId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
+        var user = new User { Id = userId, Name = "User", PasswordHash = "oldhash", IsActive = true };
+        _userRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);
+        _userRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+        _userRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _password.Setup(p => p.Hash("adminset1")).Returns("adminhash");
+
+        var dto = new UpdateUserDto { Name = "User", NewPassword = "adminset1" };
+        await _sut.UpdateAsync(userId, dto, adminId, "admin");
+
+        _userRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.PasswordHash == "adminhash")), Times.Once);
+    }
 }
