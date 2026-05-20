@@ -23,3 +23,9 @@ logs/
 
 ## OS
 .DS_Store
+
+## IDE
+.vs/
+.vscode/settings.json
+.vscode/launch.json
+*.nupkg
