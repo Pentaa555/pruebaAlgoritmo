@@ -49,20 +49,20 @@
 }
 
 [data-theme="dark"] {
-  --cream:      #15120e;
-  --cream-2:    #1d1915;
-  --cream-3:    #26221c;
-  --paper:      #1a1612;
+  --cream:      #22201c;
+  --cream-2:    #2a2722;
+  --cream-3:    #33302a;
+  --paper:      #2a2720;
   --ink:        #f5efe3;
   --ink-2:      #d6cdbb;
   --ink-3:      #8f8576;
-  --line:       #2a2620;
-  --line-soft:  #221f1a;
+  --line:       #3a3630;
+  --line-soft:  #302d28;
   --terra-soft: #4b2a1d;
 
   --bg:          var(--cream);
   --bg-elev:     var(--paper);
-  --bg-sunken:   #100d0a;
+  --bg-sunken:   #1c1a16;
   --text:        var(--ink);
   --text-muted:  var(--ink-3);
   --border:      var(--line);

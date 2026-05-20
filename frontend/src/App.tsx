@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { UsersPage } from './pages/UsersPage';
 import { UserFormPage } from './pages/UserFormPage';
+import { UserDetailPage } from './pages/UserDetailPage';
 import { ProfilePage } from './pages/ProfilePage';
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
                   <Route element={<AdminRoute />}>
                     <Route path="/users" element={<UsersPage />} />
                     <Route path="/users/new" element={<UserFormPage />} />
+                    <Route path="/users/:id" element={<UserDetailPage />} />
                     <Route path="/users/:id/edit" element={<UserFormPage />} />
                   </Route>
                   <Route path="/profile" element={<ProfilePage />} />

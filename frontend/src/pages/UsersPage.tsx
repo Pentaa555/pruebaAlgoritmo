@@ -223,6 +223,13 @@ export function UsersPage() {
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button
                         className="btn ghost sm"
+                        onClick={() => navigate(`/users/${u.id}`)}
+                        aria-label="Ver usuario"
+                      >
+                        <Icon name="eye" size={13} />
+                      </button>
+                      <button
+                        className="btn ghost sm"
                         onClick={() => navigate(`/users/${u.id}/edit`)}
                       >
                         <Icon name="edit" size={13} /> Editar
