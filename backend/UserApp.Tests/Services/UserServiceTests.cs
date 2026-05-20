@@ -61,6 +61,16 @@ public class UserServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_DuplicateEmailMixedCase_ThrowsConflictException()
+    {
+        _userRepo.Setup(r => r.GetByEmailAsync("dup@test.com"))
+                 .ReturnsAsync(new User { Email = "dup@test.com" });
+
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            _sut.CreateAsync(new CreateUserDto { Name = "X", Email = "DUP@TEST.COM", Password = "pass1234", Role = "user" }));
+    }
+
+    [Fact]
     public async Task DeleteAsync_SetsIsActiveFalse()
     {
         var user = new User { Id = Guid.NewGuid(), IsActive = true };
