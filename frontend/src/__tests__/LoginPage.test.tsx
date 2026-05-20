@@ -35,16 +35,16 @@ describe('LoginPage', () => {
 
   it('renders email and password fields', () => {
     setup();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
   });
 
   it('shows validation errors when submitted empty', async () => {
     setup();
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
     await waitFor(() => {
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument();
-      expect(screen.getByText(/password is required/i)).toBeInTheDocument();
+      expect(screen.getByText(/correo es obligatorio/i)).toBeInTheDocument();
+      expect(screen.getByText(/contraseña es obligatoria/i)).toBeInTheDocument();
     });
   });
 
@@ -54,22 +54,22 @@ describe('LoginPage', () => {
       data: { accessToken: 'tok', refreshToken: 'ref', user: mockUser },
     });
     setup();
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'admin@demo.com' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'Admin123!' } });
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'admin@demo.com' } });
+    fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'Admin123!' } });
+    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
     await waitFor(() => expect(mockLogin).toHaveBeenCalledWith('tok', 'ref', mockUser));
   });
 
   it('shows server error on failed login', async () => {
     vi.mocked(api.post).mockRejectedValueOnce({
-      response: { data: { message: 'Invalid credentials.' } },
+      response: { data: { message: 'Credenciales inválidas.' } },
     });
     setup();
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'bad@demo.com' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'wrong' } });
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.change(screen.getByLabelText(/correo/i), { target: { value: 'bad@demo.com' } });
+    fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'wrong' } });
+    fireEvent.click(screen.getByRole('button', { name: /iniciar sesión/i }));
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(/invalid credentials/i)
+      expect(screen.getByRole('alert')).toHaveTextContent(/credenciales inválidas/i)
     );
   });
 });
