@@ -22,6 +22,7 @@ public class UserRepository(AppDbContext db) : IUserRepository
 
         var total = await query.CountAsync();
         var items = await query
+            .AsNoTracking()
             .OrderBy(u => u.Name)
             .Skip((page - 1) * size)
             .Take(size)
@@ -30,7 +31,7 @@ public class UserRepository(AppDbContext db) : IUserRepository
         return (items, total);
     }
 
-    public async Task AddAsync(User user) => await db.Users.AddAsync(user);
+    public Task AddAsync(User user) { db.Users.Add(user); return Task.CompletedTask; }
 
     public Task UpdateAsync(User user) { db.Users.Update(user); return Task.CompletedTask; }
 
