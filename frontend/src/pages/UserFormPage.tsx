@@ -28,7 +28,9 @@ export function UserFormPage() {
 
   const onSubmit = async (data: UserForm) => {
     setServerError('');
-    const payload = { name: data.name, email: data.email, role: data.role, newPassword: data.password || undefined };
+    const payload = isEdit
+      ? { name: data.name, email: data.email, role: data.role, newPassword: data.password || undefined }
+      : { name: data.name, email: data.email, role: data.role, password: data.password };
     try {
       if (isEdit) await api.put(`/api/users/${id}`, payload);
       else await api.post('/api/users', payload);
