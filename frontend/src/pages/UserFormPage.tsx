@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axiosInstance';
+import { apiMessage } from '../api/apiError';
 import { Icon } from '../components/ui/Icon';
 
 interface UserForm { name: string; email: string; password: string; role: string; }
@@ -36,8 +37,7 @@ export function UserFormPage() {
       else await api.post('/api/users', payload);
       navigate('/users');
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setServerError(e.response?.data?.message ?? 'Error en la operación. Intenta de nuevo.');
+      setServerError(apiMessage(err, 'Error en la operación. Intenta de nuevo.'));
     }
   };
 

@@ -12,11 +12,13 @@ public class UserServiceTests
 {
     private readonly Mock<IUserRepository> _userRepo = new();
     private readonly Mock<IPasswordService> _password = new();
+    private readonly Mock<IRefreshTokenRepository> _tokens = new();
     private readonly UserService _sut;
 
     public UserServiceTests()
     {
-        _sut = new UserService(_userRepo.Object, _password.Object);
+        _tokens.Setup(r => r.RevokeAllForUserAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+        _sut = new UserService(_userRepo.Object, _password.Object, _tokens.Object);
     }
 
     [Fact]

@@ -27,6 +27,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(r => r.Token).IsUnique();
             e.Property(r => r.Token).HasMaxLength(512).IsRequired();
             e.Property(r => r.CreatedAt).HasDefaultValueSql("SYSUTCDATETIME()");
+            e.HasIndex(r => r.UserId);
             e.HasOne<User>()
              .WithMany()
              .HasForeignKey(r => r.UserId)

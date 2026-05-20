@@ -14,6 +14,16 @@ const PAGE_SIZE = 20;
 type RoleFilter = 'all' | 'admin' | 'user';
 type StatusFilter = 'all' | 'active' | 'inactive';
 
+function buildPageWindow(current: number, total: number): (number | null)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | null)[] = [1];
+  if (current > 3) pages.push(null);
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p);
+  if (current < total - 2) pages.push(null);
+  pages.push(total);
+  return pages;
+}
+
 const SkeletonRow = () => (
   <tr>
     <td><div className="skel" style={{ width: 18, height: 18, borderRadius: 4 }} /></td>
@@ -234,29 +244,13 @@ export function UsersPage() {
 
       {totalPages > 1 && (
         <div className="row" style={{ justifyContent: 'center', marginTop: 32, gap: 6 }}>
-          <button
-            className="btn ghost sm"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            ←
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-            <button
-              key={p}
-              className={`btn sm ${p === page ? 'primary' : 'ghost'}`}
-              onClick={() => setPage(p)}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            className="btn ghost sm"
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >
-            →
-          </button>
+          <button className="btn ghost sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>←</button>
+          {buildPageWindow(page, totalPages).map((p, i) =>
+            p === null
+              ? <span key={`ellipsis-${i}`} style={{ padding: '0 4px', color: 'var(--text-muted)' }}>…</span>
+              : <button key={p} className={`btn sm ${p === page ? 'primary' : 'ghost'}`} onClick={() => setPage(p)}>{p}</button>
+          )}
+          <button className="btn ghost sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>→</button>
         </div>
       )}
 

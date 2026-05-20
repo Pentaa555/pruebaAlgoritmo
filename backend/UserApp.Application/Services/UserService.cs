@@ -6,7 +6,7 @@ using UserApp.Application.Interfaces;
 
 namespace UserApp.Application.Services;
 
-public class UserService(IUserRepository users, IPasswordService password) : IUserService
+public class UserService(IUserRepository users, IPasswordService password, IRefreshTokenRepository tokens) : IUserService
 {
     public async Task<PagedResult<UserDto>> GetAllAsync(
         string? search, string? role, bool? isActive, int page, int size)
@@ -22,7 +22,7 @@ public class UserService(IUserRepository users, IPasswordService password) : IUs
             throw new ForbiddenException("Access denied.");
 
         var user = await users.GetByIdAsync(id);
-        if (user == null || !user.IsActive)
+        if (user == null || (requesterRole != "admin" && !user.IsActive))
             throw new NotFoundException("User not found.");
 
         return ToDto(user);
@@ -52,12 +52,12 @@ public class UserService(IUserRepository users, IPasswordService password) : IUs
 
     public async Task<UserDto> UpdateAsync(Guid id, UpdateUserDto dto, Guid requesterId, string requesterRole)
     {
+        if (requesterRole != "admin" && requesterId != id)
+            throw new ForbiddenException("Access denied.");
+
         var user = await users.GetByIdAsync(id);
         if (user == null || !user.IsActive)
             throw new NotFoundException("User not found.");
-
-        if (requesterRole != "admin" && requesterId != id)
-            throw new ForbiddenException("Access denied.");
 
         user.Name = dto.Name;
 
@@ -89,6 +89,7 @@ public class UserService(IUserRepository users, IPasswordService password) : IUs
         user.IsActive = false;
         user.UpdatedAt = DateTime.UtcNow;
         await users.UpdateAsync(user);
+        await tokens.RevokeAllForUserAsync(id);
         await users.SaveChangesAsync();
     }
 

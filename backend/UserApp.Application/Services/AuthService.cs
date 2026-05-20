@@ -74,7 +74,7 @@ public class AuthService(
     {
         var accessToken = tokenService.GenerateAccessToken(user.Id, user.Role);
         var refreshTokenStr = tokenService.GenerateRefreshToken();
-        var expiryDays = int.Parse(config["Jwt:RefreshExpiryDays"] ?? "7");
+        var expiryDays = int.TryParse(config["Jwt:RefreshExpiryDays"], out var d) ? d : 7;
 
         await tokens.AddAsync(new RefreshToken
         {
@@ -89,6 +89,6 @@ public class AuthService(
         return new LoginResponseDto(
             accessToken,
             refreshTokenStr,
-            new UserResponseDto(user.Id, user.Name, user.Email, user.Role));
+            new UserResponseDto(user.Id, user.Name, user.Email, user.Role, user.CreatedAt));
     }
 }

@@ -50,7 +50,7 @@ describe('LoginPage', () => {
   });
 
   it('calls login on successful response', async () => {
-    const mockUser: AuthUser = { id: '1', name: 'Admin', email: 'admin@demo.com', role: 'admin' };
+    const mockUser: AuthUser = { id: '1', name: 'Admin', email: 'admin@demo.com', role: 'admin', createdAt: '2026-01-01T00:00:00Z' };
     vi.mocked(api.post).mockResolvedValueOnce({
       data: { accessToken: 'tok', refreshToken: 'ref', user: mockUser },
     });

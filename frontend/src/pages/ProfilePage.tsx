@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosInstance';
+import { apiMessage } from '../api/apiError';
 import { Avatar } from '../components/ui/Avatar';
 import { Pill } from '../components/ui/Pill';
 import { Icon } from '../components/ui/Icon';
@@ -36,8 +37,7 @@ export function ProfilePage() {
       updateUser({ name: res.data.name });
       setSuccess(true);
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setServerError(e.response?.data?.message ?? 'Error al actualizar.');
+      setServerError(apiMessage(err, 'Error al actualizar.'));
     }
   };
 
@@ -52,12 +52,13 @@ export function ProfilePage() {
       setPassSuccess(true);
       resetPass();
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setPassError(e.response?.data?.message ?? 'Error al cambiar la contraseña.');
+      setPassError(apiMessage(err, 'Error al cambiar la contraseña.'));
     }
   };
 
-  const joinedDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+  const joinedDate = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })
+    : '—';
 
   return (
     <div className="page">
@@ -296,25 +297,6 @@ export function ProfilePage() {
             </form>
           </div>
 
-          {/* Danger zone */}
-          <div className="section" style={{ borderColor: 'var(--danger-soft)' }}>
-            <div className="section-head">
-              <h3 style={{ color: 'var(--danger)' }}>Zona de peligro</h3>
-              <p>Estas acciones son irreversibles. Procede con cuidado.</p>
-            </div>
-            <div className="row">
-              <Icon name="trash" size={16} style={{ color: 'var(--danger)' }} />
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontWeight: 500, fontSize: 14 }}>Eliminar cuenta</p>
-                <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-                  Se eliminarán todos tus datos de forma permanente.
-                </p>
-              </div>
-              <button className="btn danger-ghost sm" disabled>
-                Eliminar cuenta
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -19,6 +19,8 @@ public class GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger) : IExc
 
         if (status == 500)
             logger.LogError(context.Exception, "Unhandled exception");
+        else if (status is 403 or 409)
+            logger.LogWarning(context.Exception, "Request rejected with {Status}", status);
 
         context.Result = new ObjectResult(new { status, message, errors = new { } }) { StatusCode = status };
         context.ExceptionHandled = true;

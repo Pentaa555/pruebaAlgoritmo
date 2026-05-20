@@ -19,7 +19,11 @@ public class UserRepository(AppDbContext db) : IUserRepository
         var query = db.Users.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(u => u.Name.Contains(search) || u.Email.Contains(search));
+        {
+            var escaped = search.Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]");
+            query = query.Where(u => EF.Functions.Like(u.Name, $"%{escaped}%")
+                                  || EF.Functions.Like(u.Email, $"%{escaped}%"));
+        }
 
         if (!string.IsNullOrWhiteSpace(role))
             query = query.Where(u => u.Role == role);

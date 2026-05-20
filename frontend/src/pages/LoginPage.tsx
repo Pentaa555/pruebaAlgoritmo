@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
+import { apiMessage } from '../api/apiError';
 import { useAuth } from '../context/AuthContext';
 import { Icon } from '../components/ui/Icon';
 
@@ -11,11 +12,11 @@ export function LoginPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>();
   const { login, accessToken, user, isInitializing } = useAuth();
   const navigate = useNavigate();
+  const [serverError, setServerError] = useState('');
+  const [showPass, setShowPass] = useState(false);
 
   if (isInitializing) return null;
   if (accessToken) return <Navigate to={user?.role === 'admin' ? '/users' : '/profile'} replace />;
-  const [serverError, setServerError] = useState('');
-  const [showPass, setShowPass] = useState(false);
 
   const onSubmit = async (data: LoginForm) => {
     setServerError('');
@@ -24,8 +25,7 @@ export function LoginPage() {
       login(res.data.accessToken, res.data.refreshToken, res.data.user);
       navigate(res.data.user.role === 'admin' ? '/users' : '/profile');
     } catch (err: unknown) {
-      const e = err as { response?: { data?: { message?: string } } };
-      setServerError(e.response?.data?.message ?? 'Error al iniciar sesión. Intenta de nuevo.');
+      setServerError(apiMessage(err, 'Error al iniciar sesión. Intenta de nuevo.'));
     }
   };
 

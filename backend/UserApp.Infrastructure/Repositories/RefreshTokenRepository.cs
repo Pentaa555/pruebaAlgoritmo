@@ -14,5 +14,13 @@ public class RefreshTokenRepository(AppDbContext db) : IRefreshTokenRepository
 
     public Task UpdateAsync(RefreshToken token) { db.RefreshTokens.Update(token); return Task.CompletedTask; }
 
+    public async Task RevokeAllForUserAsync(Guid userId)
+    {
+        var now = DateTime.UtcNow;
+        await db.RefreshTokens
+            .Where(t => t.UserId == userId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now));
+    }
+
     public Task SaveChangesAsync() => db.SaveChangesAsync();
 }
