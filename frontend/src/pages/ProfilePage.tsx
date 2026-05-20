@@ -7,12 +7,23 @@ import { Pill } from '../components/ui/Pill';
 import { Icon } from '../components/ui/Icon';
 
 interface ProfileForm { name: string; }
+interface PasswordForm { currentPassword: string; newPassword: string; confirmPassword: string; }
 
 export function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [passSuccess, setPassSuccess] = useState(false);
+  const [passError, setPassError] = useState('');
+
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProfileForm>();
+  const {
+    register: registerPass,
+    handleSubmit: handlePassSubmit,
+    reset: resetPass,
+    watch,
+    formState: { errors: passErrors, isSubmitting: isPassSubmitting },
+  } = useForm<PasswordForm>();
 
   useEffect(() => {
     if (user) reset({ name: user.name });
@@ -27,6 +38,22 @@ export function ProfilePage() {
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
       setServerError(e.response?.data?.message ?? 'Error al actualizar.');
+    }
+  };
+
+  const onPasswordSubmit = async (data: PasswordForm) => {
+    setPassError(''); setPassSuccess(false);
+    try {
+      await api.put(`/api/users/${user?.id}`, {
+        name: user?.name,
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      setPassSuccess(true);
+      resetPass();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      setPassError(e.response?.data?.message ?? 'Error al cambiar la contraseña.');
     }
   };
 
@@ -151,11 +178,7 @@ export function ProfilePage() {
               </div>
 
               <div className="actions-row">
-                <button
-                  type="submit"
-                  className="btn accent"
-                  disabled={isSubmitting}
-                >
+                <button type="submit" className="btn accent" disabled={isSubmitting}>
                   {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
                   {!isSubmitting && <Icon name="check" size={15} />}
                 </button>
@@ -169,28 +192,108 @@ export function ProfilePage() {
               <h3>Seguridad</h3>
               <p>Cambia tu contraseña para mantener tu cuenta segura.</p>
             </div>
-            <div className="form-row">
-              <div className="field">
-                <label htmlFor="current-pass">Contraseña actual</label>
-                <input id="current-pass" type="password" className="input" placeholder="••••••••" disabled />
+
+            {passSuccess && (
+              <div
+                role="status"
+                style={{
+                  background: 'var(--ok-soft)',
+                  color: 'var(--ok)',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-2)',
+                  borderLeft: '3px solid var(--ok)',
+                  fontSize: 14,
+                  marginBottom: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <Icon name="check" size={15} />
+                Contraseña actualizada correctamente.
               </div>
-              <div className="form-2col">
+            )}
+
+            {passError && (
+              <div
+                role="alert"
+                style={{
+                  background: 'var(--danger-soft)',
+                  color: 'var(--danger)',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-2)',
+                  borderLeft: '3px solid var(--danger)',
+                  fontSize: 14,
+                  marginBottom: 18,
+                }}
+              >
+                {passError}
+              </div>
+            )}
+
+            <form onSubmit={handlePassSubmit(onPasswordSubmit)} noValidate>
+              <div className="form-row">
                 <div className="field">
-                  <label htmlFor="new-pass">Nueva contraseña</label>
-                  <input id="new-pass" type="password" className="input" placeholder="Mínimo 8 caracteres" disabled />
+                  <label htmlFor="current-pass">Contraseña actual</label>
+                  <input
+                    id="current-pass"
+                    type="password"
+                    className="input"
+                    placeholder="••••••••"
+                    aria-invalid={!!passErrors.currentPassword}
+                    {...registerPass('currentPassword', { required: 'La contraseña actual es obligatoria' })}
+                  />
+                  {passErrors.currentPassword && (
+                    <span style={{ color: 'var(--danger)', fontSize: 12 }}>{passErrors.currentPassword.message}</span>
+                  )}
                 </div>
-                <div className="field">
-                  <label htmlFor="confirm-pass">Confirmar contraseña</label>
-                  <input id="confirm-pass" type="password" className="input" placeholder="Repite la nueva" disabled />
+
+                <div className="form-2col">
+                  <div className="field">
+                    <label htmlFor="new-pass">Nueva contraseña</label>
+                    <input
+                      id="new-pass"
+                      type="password"
+                      className="input"
+                      placeholder="Mínimo 8 caracteres"
+                      aria-invalid={!!passErrors.newPassword}
+                      {...registerPass('newPassword', {
+                        required: 'La nueva contraseña es obligatoria',
+                        minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                      })}
+                    />
+                    {passErrors.newPassword && (
+                      <span style={{ color: 'var(--danger)', fontSize: 12 }}>{passErrors.newPassword.message}</span>
+                    )}
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="confirm-pass">Confirmar contraseña</label>
+                    <input
+                      id="confirm-pass"
+                      type="password"
+                      className="input"
+                      placeholder="Repite la nueva"
+                      aria-invalid={!!passErrors.confirmPassword}
+                      {...registerPass('confirmPassword', {
+                        required: 'Confirma tu nueva contraseña',
+                        validate: v => v === watch('newPassword') || 'Las contraseñas no coinciden',
+                      })}
+                    />
+                    {passErrors.confirmPassword && (
+                      <span style={{ color: 'var(--danger)', fontSize: 12 }}>{passErrors.confirmPassword.message}</span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="actions-row">
-              <button className="btn ghost" disabled>
-                <Icon name="lock" size={15} />
-                Próximamente
-              </button>
-            </div>
+
+              <div className="actions-row">
+                <button type="submit" className="btn accent" disabled={isPassSubmitting}>
+                  {isPassSubmitting ? 'Guardando...' : 'Cambiar contraseña'}
+                  {!isPassSubmitting && <Icon name="lock" size={15} />}
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Danger zone */}
