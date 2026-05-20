@@ -9,7 +9,7 @@ import { Icon } from '../components/ui/Icon';
 interface User { id: string; name: string; email: string; role: string; isActive: boolean; }
 interface PagedResult { items: User[]; totalCount: number; page: number; size: number; }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 20;
 
 type RoleFilter = 'all' | 'admin' | 'user';
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -28,14 +28,17 @@ export function UsersPage() {
   const fetchUsers = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const res = await api.get('/api/users', { params: { search, page, size: PAGE_SIZE } });
+      const params: Record<string, unknown> = { search, page, size: PAGE_SIZE };
+      if (roleFilter !== 'all') params.role = roleFilter;
+      if (statusFilter !== 'all') params.isActive = statusFilter === 'active';
+      const res = await api.get('/api/users', { params });
       setData(res.data);
     } catch {
       setError('Error al cargar usuarios. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
-  }, [search, page]);
+  }, [search, page, roleFilter, statusFilter]);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
   useEffect(() => { setPage(1); }, [search, roleFilter, statusFilter]);
@@ -59,27 +62,25 @@ export function UsersPage() {
     });
   };
 
-  const visibleItems = (data?.items ?? []).filter(u => {
-    if (roleFilter !== 'all' && u.role !== roleFilter) return false;
-    if (statusFilter === 'active' && !u.isActive) return false;
-    if (statusFilter === 'inactive' && u.isActive) return false;
-    return true;
-  });
-
+  const items = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.totalCount / PAGE_SIZE) : 0;
 
-  const SkeletonCard = () => (
-    <div className="user-card">
-      <div className="user-card-top" style={{ gap: 10 }}>
-        <div className="skel avatar" style={{ width: 64, height: 64, borderRadius: '50%' }} />
-        <div className="skel" style={{ width: '60%', height: 20, borderRadius: 6 }} />
-        <div className="skel" style={{ width: '80%', height: 14, borderRadius: 6 }} />
-      </div>
-      <div className="user-card-meta">
-        <div className="skel" style={{ width: 56, height: 22, borderRadius: 999 }} />
-        <div className="skel" style={{ width: 70, height: 22, borderRadius: 999 }} />
-      </div>
-    </div>
+  const SkeletonRow = () => (
+    <tr>
+      <td><div className="skel" style={{ width: 18, height: 18, borderRadius: 4 }} /></td>
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="skel" style={{ width: 36, height: 36, borderRadius: '50%' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <div className="skel" style={{ width: 120, height: 14, borderRadius: 4 }} />
+            <div className="skel" style={{ width: 160, height: 12, borderRadius: 4 }} />
+          </div>
+        </div>
+      </td>
+      <td><div className="skel" style={{ width: 56, height: 22, borderRadius: 999 }} /></td>
+      <td className="hide-mobile"><div className="skel" style={{ width: 70, height: 22, borderRadius: 999 }} /></td>
+      <td><div className="skel" style={{ width: 80, height: 30, borderRadius: 6, marginLeft: 'auto' }} /></td>
+    </tr>
   );
 
   return (
@@ -154,113 +155,109 @@ export function UsersPage() {
         </div>
       )}
 
-      {loading ? (
-        <div className="users-grid stagger">
-          {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-        </div>
-      ) : visibleItems.length === 0 ? (
-        <div className="empty">
-          <div className="glyph">∅</div>
-          <p className="muted" style={{ margin: 0 }}>
-            {search ? 'No se encontraron usuarios con ese criterio.' : 'Aún no hay usuarios registrados.'}
-          </p>
-          {!search && (
-            <button className="btn soft" style={{ marginTop: 16 }} onClick={() => navigate('/users/new')}>
-              <Icon name="plus" size={16} />
-              Crear primero
+      <div style={{ overflowX: 'auto' }}>
+        <table className="users-table">
+          <thead>
+            <tr>
+              <th style={{ width: 40 }} />
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th className="hide-mobile">Estado</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '48px 0' }}>
+                  <div className="glyph">∅</div>
+                  <p className="muted" style={{ margin: '8px 0 0' }}>
+                    {search ? 'No se encontraron usuarios con ese criterio.' : 'Aún no hay usuarios registrados.'}
+                  </p>
+                  {!search && roleFilter === 'all' && statusFilter === 'all' && (
+                    <button className="btn soft" style={{ marginTop: 16 }} onClick={() => navigate('/users/new')}>
+                      <Icon name="plus" size={16} /> Crear primero
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ) : (
+              items.map(u => (
+                <tr key={u.id} className={selected.has(u.id) ? 'selected' : ''}>
+                  <td>
+                    <Checkbox
+                      checked={selected.has(u.id)}
+                      onCheck={() => toggleSelect(u.id)}
+                    />
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <Avatar name={u.name} size="sm" />
+                      <div>
+                        <p style={{ margin: 0, fontWeight: 500, fontSize: 14 }}>{u.name}</p>
+                        <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <Pill tone={u.role === 'admin' ? 'accent' : 'neutral'}>{u.role}</Pill>
+                  </td>
+                  <td className="hide-mobile">
+                    <Pill tone={u.isActive ? 'ok' : 'danger'} dot>
+                      {u.isActive ? 'Activo' : 'Inactivo'}
+                    </Pill>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                      <button
+                        className="btn ghost sm"
+                        onClick={() => navigate(`/users/${u.id}/edit`)}
+                      >
+                        <Icon name="edit" size={13} /> Editar
+                      </button>
+                      <button
+                        className="btn danger-ghost sm"
+                        onClick={() => handleDelete(u.id)}
+                      >
+                        <Icon name="trash" size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="row" style={{ justifyContent: 'center', marginTop: 32, gap: 6 }}>
+          <button
+            className="btn ghost sm"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            ←
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <button
+              key={p}
+              className={`btn sm ${p === page ? 'primary' : 'ghost'}`}
+              onClick={() => setPage(p)}
+            >
+              {p}
             </button>
-          )}
+          ))}
+          <button
+            className="btn ghost sm"
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            →
+          </button>
         </div>
-      ) : (
-        <>
-          <div className="results-line">
-            <span className="eyebrow">
-              {visibleItems.length} {visibleItems.length === 1 ? 'resultado' : 'resultados'}
-            </span>
-          </div>
-
-          <div className="users-grid stagger">
-            {visibleItems.map(u => (
-              <div
-                key={u.id}
-                className={`user-card ${selected.has(u.id) ? 'selected' : ''}`}
-              >
-                <Checkbox
-                  className="check-btn"
-                  checked={selected.has(u.id)}
-                  onCheck={() => toggleSelect(u.id)}
-                />
-                <button
-                  className="iconbtn menu-btn"
-                  onClick={() => navigate(`/users/${u.id}/edit`)}
-                  aria-label="Editar"
-                >
-                  <Icon name="edit" size={15} />
-                </button>
-
-                <div className="user-card-top">
-                  <Avatar name={u.name} size="lg" />
-                  <p className="user-card-name">{u.name}</p>
-                  <p className="user-card-email">{u.email}</p>
-                </div>
-
-                <div className="user-card-meta">
-                  <Pill tone={u.role === 'admin' ? 'accent' : 'neutral'}>
-                    {u.role}
-                  </Pill>
-                  <Pill tone={u.isActive ? 'ok' : 'danger'} dot>
-                    {u.isActive ? 'Activo' : 'Inactivo'}
-                  </Pill>
-                </div>
-
-                <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
-                  <button
-                    className="btn ghost sm"
-                    style={{ flex: 1 }}
-                    onClick={() => navigate(`/users/${u.id}/edit`)}
-                  >
-                    <Icon name="edit" size={13} />
-                    Editar
-                  </button>
-                  <button
-                    className="btn danger-ghost sm"
-                    onClick={() => handleDelete(u.id)}
-                  >
-                    <Icon name="trash" size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {totalPages > 1 && (
-            <div className="row" style={{ justifyContent: 'center', marginTop: 32, gap: 6 }}>
-              <button
-                className="btn ghost sm"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                ←
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  className={`btn sm ${p === page ? 'primary' : 'ghost'}`}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </button>
-              ))}
-              <button
-                className="btn ghost sm"
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                →
-              </button>
-            </div>
-          )}
-        </>
       )}
 
       {selected.size > 0 && (
