@@ -14,6 +14,24 @@ const PAGE_SIZE = 20;
 type RoleFilter = 'all' | 'admin' | 'user';
 type StatusFilter = 'all' | 'active' | 'inactive';
 
+const SkeletonRow = () => (
+  <tr>
+    <td><div className="skel" style={{ width: 18, height: 18, borderRadius: 4 }} /></td>
+    <td>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="skel" style={{ width: 36, height: 36, borderRadius: '50%' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div className="skel" style={{ width: 120, height: 14, borderRadius: 4 }} />
+          <div className="skel" style={{ width: 160, height: 12, borderRadius: 4 }} />
+        </div>
+      </div>
+    </td>
+    <td><div className="skel" style={{ width: 56, height: 22, borderRadius: 999 }} /></td>
+    <td className="hide-mobile"><div className="skel" style={{ width: 70, height: 22, borderRadius: 999 }} /></td>
+    <td><div className="skel" style={{ width: 80, height: 30, borderRadius: 6, marginLeft: 'auto' }} /></td>
+  </tr>
+);
+
 export function UsersPage() {
   const navigate = useNavigate();
   const [data, setData] = useState<PagedResult | null>(null);
@@ -64,24 +82,6 @@ export function UsersPage() {
 
   const items = data?.items ?? [];
   const totalPages = data ? Math.ceil(data.totalCount / PAGE_SIZE) : 0;
-
-  const SkeletonRow = () => (
-    <tr>
-      <td><div className="skel" style={{ width: 18, height: 18, borderRadius: 4 }} /></td>
-      <td>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div className="skel" style={{ width: 36, height: 36, borderRadius: '50%' }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <div className="skel" style={{ width: 120, height: 14, borderRadius: 4 }} />
-            <div className="skel" style={{ width: 160, height: 12, borderRadius: 4 }} />
-          </div>
-        </div>
-      </td>
-      <td><div className="skel" style={{ width: 56, height: 22, borderRadius: 999 }} /></td>
-      <td className="hide-mobile"><div className="skel" style={{ width: 70, height: 22, borderRadius: 999 }} /></td>
-      <td><div className="skel" style={{ width: 80, height: 30, borderRadius: 6, marginLeft: 'auto' }} /></td>
-    </tr>
-  );
 
   return (
     <div className="page">
@@ -159,7 +159,7 @@ export function UsersPage() {
         <table className="users-table">
           <thead>
             <tr>
-              <th style={{ width: 40 }} />
+              <th aria-label="Seleccionar" style={{ width: 40 }} />
               <th>Usuario</th>
               <th>Rol</th>
               <th className="hide-mobile">Estado</th>
