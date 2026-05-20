@@ -1,59 +1,57 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const navLinkStyle: React.CSSProperties = {
-  color: '#fff',
-  textDecoration: 'none',
-  marginRight: '1.5rem',
-  fontSize: '14px',
-  opacity: 0.9,
-  transition: 'opacity .15s',
-};
+import { useTheme } from '../context/ThemeContext';
+import { Icon } from './ui/Icon';
+import { Avatar } from './ui/Avatar';
 
 export function Layout() {
   const { user, logout, isAdmin } = useAuth();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
+  const isActive = (path: string) => location.pathname.startsWith(path) ? 'active' : '';
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f3f4f6', display: 'flex', flexDirection: 'column' }}>
-      <nav style={{
-        background: 'linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%)',
-        padding: '0 2rem',
-        display: 'flex',
-        alignItems: 'center',
-        height: '60px',
-        boxShadow: '0 2px 10px rgba(37,99,235,0.35)',
-      }}>
-        <span style={{ color: '#fff', fontWeight: 700, fontSize: '18px', marginRight: 'auto', letterSpacing: '0.03em' }}>
-          UserApp
-        </span>
-        {isAdmin() && (
-          <Link to="/users" style={navLinkStyle}>Usuarios</Link>
-        )}
-        <Link to="/profile" style={navLinkStyle}>{user?.name}</Link>
+    <div className="app">
+      <header className="topbar">
         <button
-          onClick={handleLogout}
-          style={{
-            background: 'rgba(255,255,255,0.18)',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.35)',
-            padding: '6px 16px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            transition: 'background .15s',
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.28)')}
-          onMouseOut={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.18)')}
+          className="brand"
+          onClick={() => navigate(isAdmin() ? '/users' : '/profile')}
+          style={{ background: 'transparent', border: 0, cursor: 'pointer', padding: 0 }}
         >
-          Cerrar sesión
+          <span className="brand-mark" />
+          <span>UserApp</span>
         </button>
-      </nav>
+
+        <nav className="nav">
+          {isAdmin() && (
+            <Link className={isActive('/users')} to="/users">Usuarios</Link>
+          )}
+          <Link className={isActive('/profile')} to="/profile">Mi perfil</Link>
+        </nav>
+
+        <div className="topbar-spacer" />
+
+        <div className="topbar-right">
+          <button className="iconbtn" onClick={toggle} aria-label="Cambiar tema" title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}>
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
+          </button>
+          <button
+            onClick={() => navigate('/profile')}
+            style={{ background: 'transparent', border: 0, cursor: 'pointer', gap: 8, padding: '4px 10px 4px 4px', borderRadius: 999, display: 'flex', alignItems: 'center' }}
+          >
+            <Avatar name={user?.name ?? ''} size="sm" />
+            <span style={{ fontSize: 14 }}>{user?.name}</span>
+          </button>
+          <button className="btn ghost sm" onClick={handleLogout}>Cerrar sesión</button>
+        </div>
+      </header>
       <main style={{ flex: 1 }}>
         <Outlet />
       </main>

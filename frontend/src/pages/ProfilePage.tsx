@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosInstance';
+import { Avatar } from '../components/ui/Avatar';
+import { Pill } from '../components/ui/Pill';
+import { Icon } from '../components/ui/Icon';
 
 interface ProfileForm { name: string; }
 
@@ -9,7 +12,6 @@ export function ProfilePage() {
   const { user, updateUser } = useAuth();
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState('');
-  const [focused, setFocused] = useState(false);
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProfileForm>();
 
   useEffect(() => {
@@ -28,52 +30,189 @@ export function ProfilePage() {
     }
   };
 
+  const joinedDate = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+
   return (
-    <div style={{ padding: '2rem 2.5rem', maxWidth: '540px' }}>
-      <h1 style={{ color: '#1e3a8a', marginBottom: '0.25rem', fontSize: '22px', fontWeight: 700 }}>Mi perfil</h1>
-      <p style={{ color: '#6b7280', marginBottom: '1.5rem', fontSize: '14px' }}>{user?.email}</p>
-
-      {success && (
-        <div role="status" style={{ background: '#f0fdf4', color: '#166534', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '14px', borderLeft: '4px solid #16a34a' }}>
-          Perfil actualizado correctamente.
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <p className="eyebrow">Cuenta</p>
+          <h1 className="h-1">Mi perfil</h1>
         </div>
-      )}
-      {serverError && (
-        <div role="alert" style={{ background: '#fef2f2', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '14px', borderLeft: '4px solid #dc2626' }}>
-          {serverError}
-        </div>
-      )}
+      </div>
 
-      <div style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', padding: '1.75rem' }}>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div style={{ marginBottom: '1.75rem' }}>
-            <label htmlFor="name" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 500, color: '#374151' }}>
-              Nombre completo
-            </label>
-            <input
-              id="name" type="text"
-              {...register('name', { required: 'El nombre es obligatorio' })}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
-              style={{
-                width: '100%', padding: '9px 13px',
-                border: `1.5px solid ${focused ? '#2563eb' : '#d1d5db'}`,
-                borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box',
-                outline: 'none', transition: 'border-color .2s, box-shadow .2s',
-                boxShadow: focused ? '0 0 0 3px rgba(37,99,235,0.15)' : 'none',
-              }}
-            />
-            {errors.name && <span style={{ color: '#dc2626', fontSize: '12px', marginTop: '3px', display: 'block' }}>{errors.name.message}</span>}
+      <div className="profile-grid">
+        {/* Left sidebar */}
+        <aside className="profile-side">
+          <div className="card profile-card">
+            <Avatar name={user?.name ?? ''} size="xl" />
+            <p className="profile-name">{user?.name}</p>
+            <p className="muted" style={{ fontSize: 13, margin: 0 }}>{user?.email}</p>
+
+            <div className="row" style={{ gap: 6 }}>
+              <Pill tone={user?.role === 'admin' ? 'accent' : 'neutral'}>
+                {user?.role ?? 'usuario'}
+              </Pill>
+              <Pill tone="ok" dot>Activo</Pill>
+            </div>
+
+            <div className="profile-meta-list">
+              <div className="profile-meta-row">
+                <span className="k">Miembro desde</span>
+                <span>{joinedDate}</span>
+              </div>
+              <div className="profile-meta-row">
+                <span className="k">Rol</span>
+                <span style={{ textTransform: 'capitalize' }}>{user?.role}</span>
+              </div>
+              <div className="profile-meta-row">
+                <span className="k">Estado</span>
+                <span style={{ color: 'var(--ok)' }}>Activo</span>
+              </div>
+            </div>
           </div>
-          <button
-            type="submit" disabled={isSubmitting}
-            style={{ padding: '11px 28px', background: isSubmitting ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 500, cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: 'background .15s' }}
-            onMouseOver={(e) => { if (!isSubmitting) e.currentTarget.style.background = '#1d4ed8'; }}
-            onMouseOut={(e) => { if (!isSubmitting) e.currentTarget.style.background = '#2563eb'; }}
-          >
-            {isSubmitting ? 'Guardando...' : 'Actualizar'}
-          </button>
-        </form>
+        </aside>
+
+        {/* Right main */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Personal info */}
+          <div className="section">
+            <div className="section-head">
+              <h3>Información personal</h3>
+              <p>Actualiza tu nombre y consulta tu correo electrónico.</p>
+            </div>
+
+            {success && (
+              <div
+                role="status"
+                style={{
+                  background: 'var(--ok-soft)',
+                  color: 'var(--ok)',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-2)',
+                  borderLeft: '3px solid var(--ok)',
+                  fontSize: 14,
+                  marginBottom: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <Icon name="check" size={15} />
+                Perfil actualizado correctamente.
+              </div>
+            )}
+
+            {serverError && (
+              <div
+                role="alert"
+                style={{
+                  background: 'var(--danger-soft)',
+                  color: 'var(--danger)',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-2)',
+                  borderLeft: '3px solid var(--danger)',
+                  fontSize: 14,
+                  marginBottom: 18,
+                }}
+              >
+                {serverError}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <div className="form-row">
+                <div className="field">
+                  <label htmlFor="name">Nombre completo</label>
+                  <input
+                    id="name"
+                    type="text"
+                    className="input"
+                    placeholder="Tu nombre"
+                    aria-invalid={!!errors.name}
+                    {...register('name', { required: 'El nombre es obligatorio' })}
+                  />
+                  {errors.name && (
+                    <span style={{ color: 'var(--danger)', fontSize: 12 }}>{errors.name.message}</span>
+                  )}
+                </div>
+
+                <div className="field">
+                  <label htmlFor="email-display">Correo electrónico</label>
+                  <input
+                    id="email-display"
+                    type="email"
+                    className="input"
+                    value={user?.email ?? ''}
+                    readOnly
+                    style={{ color: 'var(--text-muted)', cursor: 'not-allowed' }}
+                  />
+                </div>
+              </div>
+
+              <div className="actions-row">
+                <button
+                  type="submit"
+                  className="btn accent"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                  {!isSubmitting && <Icon name="check" size={15} />}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Security */}
+          <div className="section">
+            <div className="section-head">
+              <h3>Seguridad</h3>
+              <p>Cambia tu contraseña para mantener tu cuenta segura.</p>
+            </div>
+            <div className="form-row">
+              <div className="field">
+                <label htmlFor="current-pass">Contraseña actual</label>
+                <input id="current-pass" type="password" className="input" placeholder="••••••••" disabled />
+              </div>
+              <div className="form-2col">
+                <div className="field">
+                  <label htmlFor="new-pass">Nueva contraseña</label>
+                  <input id="new-pass" type="password" className="input" placeholder="Mínimo 8 caracteres" disabled />
+                </div>
+                <div className="field">
+                  <label htmlFor="confirm-pass">Confirmar contraseña</label>
+                  <input id="confirm-pass" type="password" className="input" placeholder="Repite la nueva" disabled />
+                </div>
+              </div>
+            </div>
+            <div className="actions-row">
+              <button className="btn ghost" disabled>
+                <Icon name="lock" size={15} />
+                Próximamente
+              </button>
+            </div>
+          </div>
+
+          {/* Danger zone */}
+          <div className="section" style={{ borderColor: 'var(--danger-soft)' }}>
+            <div className="section-head">
+              <h3 style={{ color: 'var(--danger)' }}>Zona de peligro</h3>
+              <p>Estas acciones son irreversibles. Procede con cuidado.</p>
+            </div>
+            <div className="row">
+              <Icon name="trash" size={16} style={{ color: 'var(--danger)' }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontWeight: 500, fontSize: 14 }}>Eliminar cuenta</p>
+                <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+                  Se eliminarán todos tus datos de forma permanente.
+                </p>
+              </div>
+              <button className="btn danger-ghost sm" disabled>
+                Eliminar cuenta
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

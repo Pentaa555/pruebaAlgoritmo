@@ -3,27 +3,16 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
+import { Icon } from '../components/ui/Icon';
 
 interface RegisterForm { name: string; email: string; password: string; }
-
-const baseInput: React.CSSProperties = {
-  width: '100%', padding: '9px 13px', border: '1.5px solid #d1d5db',
-  borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box',
-  outline: 'none', transition: 'border-color .2s, box-shadow .2s',
-};
-
-const fields: { id: keyof RegisterForm; label: string; type: string; rules: object }[] = [
-  { id: 'name', label: 'Nombre completo', type: 'text', rules: { required: 'El nombre es obligatorio' } },
-  { id: 'email', label: 'Correo electrónico', type: 'email', rules: { required: 'El correo es obligatorio', pattern: { value: /^\S+@\S+$/i, message: 'Correo inválido' } } },
-  { id: 'password', label: 'Contraseña', type: 'password', rules: { required: 'La contraseña es obligatoria', minLength: { value: 8, message: 'Mínimo 8 caracteres' } } },
-];
 
 export function RegisterPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
-  const [focused, setFocused] = useState<string | null>(null);
+  const [showPass, setShowPass] = useState(false);
 
   const onSubmit = async (data: RegisterForm) => {
     setServerError('');
@@ -38,44 +27,131 @@ export function RegisterPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f3f4f6' }}>
-      <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', width: '100%', maxWidth: '420px' }}>
-        <h1 style={{ color: '#1e3a8a', marginBottom: '0.25rem', fontSize: '22px' }}>Crear cuenta</h1>
-        <p style={{ color: '#6b7280', marginBottom: '1.75rem', fontSize: '14px' }}>Completa tus datos para registrarte</p>
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg)',
+        padding: '28px 20px',
+      }}
+    >
+      <div style={{ width: '100%', maxWidth: 420 }} className="anim-fade-up">
+        <div className="row" style={{ marginBottom: 28 }}>
+          <span className="brand-mark small" />
+          <span style={{ fontFamily: 'var(--serif)', fontSize: 20 }}>UserApp</span>
+        </div>
+
+        <h1 className="h-2" style={{ marginBottom: 6 }}>Crear cuenta</h1>
+        <p className="muted" style={{ fontSize: 14, marginBottom: 24 }}>
+          Completa tus datos para empezar
+        </p>
 
         {serverError && (
-          <div role="alert" style={{ background: '#fef2f2', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '14px', borderLeft: '4px solid #dc2626' }}>
+          <div
+            role="alert"
+            style={{
+              background: 'var(--danger-soft)',
+              color: 'var(--danger)',
+              padding: '10px 14px',
+              borderRadius: 'var(--r-2)',
+              borderLeft: '3px solid var(--danger)',
+              fontSize: 14,
+              marginBottom: 16,
+            }}
+          >
             {serverError}
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          {fields.map(({ id, label, type, rules }) => (
-            <div key={id} style={{ marginBottom: '1rem' }}>
-              <label htmlFor={id} style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 500, color: '#374151' }}>{label}</label>
+        <form style={{ display: 'flex', flexDirection: 'column', gap: 14 }} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="field">
+            <label htmlFor="name">Nombre completo</label>
+            <div className="input-wrap">
+              <Icon name="user" size={16} className="leading-icon" />
               <input
-                id={id} type={type}
-                {...register(id, rules)}
-                style={{ ...baseInput, ...(focused === id ? { borderColor: '#2563eb', boxShadow: '0 0 0 3px rgba(37,99,235,0.15)' } : {}) }}
-                onFocus={() => setFocused(id)}
-                onBlur={() => setFocused(null)}
+                id="name"
+                type="text"
+                className="input has-icon"
+                placeholder="Tu nombre"
+                aria-invalid={!!errors.name}
+                {...register('name', { required: 'El nombre es obligatorio' })}
               />
-              {errors[id] && <span style={{ color: '#dc2626', fontSize: '12px', marginTop: '3px', display: 'block' }}>{errors[id]?.message}</span>}
             </div>
-          ))}
+            {errors.name && (
+              <span style={{ color: 'var(--danger)', fontSize: 12 }}>{errors.name.message}</span>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="email">Correo electrónico</label>
+            <div className="input-wrap">
+              <Icon name="mail" size={16} className="leading-icon" />
+              <input
+                id="email"
+                type="email"
+                className="input has-icon"
+                placeholder="tu@correo.com"
+                aria-invalid={!!errors.email}
+                {...register('email', {
+                  required: 'El correo es obligatorio',
+                  pattern: { value: /^\S+@\S+$/i, message: 'Correo inválido' },
+                })}
+              />
+            </div>
+            {errors.email && (
+              <span style={{ color: 'var(--danger)', fontSize: 12 }}>{errors.email.message}</span>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="reg-password">Contraseña</label>
+            <div className="input-wrap">
+              <Icon name="lock" size={16} className="leading-icon" />
+              <input
+                id="reg-password"
+                type={showPass ? 'text' : 'password'}
+                className="input has-icon"
+                placeholder="Mínimo 8 caracteres"
+                style={{ paddingRight: 44 }}
+                aria-invalid={!!errors.password}
+                {...register('password', {
+                  required: 'La contraseña es obligatoria',
+                  minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                })}
+              />
+              <button
+                type="button"
+                className="iconbtn"
+                style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)' }}
+                onClick={() => setShowPass(v => !v)}
+                aria-label={showPass ? 'Ocultar' : 'Mostrar'}
+              >
+                <Icon name={showPass ? 'eyeOff' : 'eye'} size={16} />
+              </button>
+            </div>
+            {errors.password && (
+              <span style={{ color: 'var(--danger)', fontSize: 12 }}>{errors.password.message}</span>
+            )}
+          </div>
 
           <button
-            type="submit" disabled={isSubmitting}
-            style={{ width: '100%', padding: '11px', background: isSubmitting ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 500, cursor: isSubmitting ? 'not-allowed' : 'pointer', marginTop: '0.5rem', transition: 'background .15s' }}
-            onMouseOver={(e) => { if (!isSubmitting) e.currentTarget.style.background = '#1d4ed8'; }}
-            onMouseOut={(e) => { if (!isSubmitting) e.currentTarget.style.background = '#2563eb'; }}
+            type="submit"
+            className="btn accent full lg"
+            disabled={isSubmitting}
+            style={{ marginTop: 4 }}
           >
             {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
+            {!isSubmitting && <Icon name="arrowRight" size={16} />}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '14px', color: '#6b7280' }}>
-          ¿Ya tienes cuenta? <Link to="/login" style={{ color: '#2563eb', fontWeight: 500 }}>Inicia sesión</Link>
+        <p style={{ textAlign: 'center', marginTop: 20, fontSize: 13, color: 'var(--text-muted)' }}>
+          ¿Ya tienes cuenta?{' '}
+          <Link to="/login" style={{ color: 'var(--text)', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            Inicia sesión
+          </Link>
         </p>
       </div>
     </div>

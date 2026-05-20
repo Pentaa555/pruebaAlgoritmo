@@ -3,23 +3,16 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
+import { Icon } from '../components/ui/Icon';
 
 interface LoginForm { email: string; password: string; }
-
-const baseInput: React.CSSProperties = {
-  width: '100%', padding: '9px 13px', border: '1.5px solid #d1d5db',
-  borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box',
-  outline: 'none', transition: 'border-color .2s, box-shadow .2s',
-};
-const focusStyle: React.CSSProperties = { borderColor: '#2563eb', boxShadow: '0 0 0 3px rgba(37,99,235,0.15)' };
-const blurStyle: React.CSSProperties = { borderColor: '#d1d5db', boxShadow: 'none' };
 
 export function LoginPage() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
-  const [focused, setFocused] = useState<string | null>(null);
+  const [showPass, setShowPass] = useState(false);
 
   const onSubmit = async (data: LoginForm) => {
     setServerError('');
@@ -34,59 +27,131 @@ export function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f3f4f6' }}>
-      <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', width: '100%', maxWidth: '420px' }}>
-        <h1 style={{ color: '#1e3a8a', marginBottom: '0.25rem', fontSize: '22px' }}>Iniciar sesión</h1>
-        <p style={{ color: '#6b7280', marginBottom: '1.75rem', fontSize: '14px' }}>Ingresa tus credenciales para continuar</p>
+    <div className="login">
+      {/* Left: form */}
+      <div className="login-left">
+        <div className="row">
+          <span className="brand-mark small" />
+          <span style={{ fontFamily: 'var(--serif)', fontSize: 20 }}>UserApp</span>
+        </div>
 
-        {serverError && (
-          <div role="alert" style={{ background: '#fef2f2', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '14px', borderLeft: '4px solid #dc2626' }}>
-            {serverError}
-          </div>
-        )}
+        <div className="login-form-wrap anim-fade-up">
+          <h1 className="h-2">
+            Bienvenido <em className="italic-serif">de vuelta.</em>
+          </h1>
+          <p className="muted" style={{ marginTop: 6, fontSize: 14 }}>
+            Ingresa tus credenciales para continuar
+          </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 500, color: '#374151' }}>Correo electrónico</label>
-            <input
-              id="email" type="email"
-              {...register('email', { required: 'El correo es obligatorio', pattern: { value: /^\S+@\S+$/i, message: 'Correo inválido' } })}
-              style={{ ...baseInput, ...(focused === 'email' ? focusStyle : blurStyle) }}
-              onFocus={() => setFocused('email')}
-              onBlur={() => setFocused(null)}
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'email-err' : undefined}
-            />
-            {errors.email && <span id="email-err" style={{ color: '#dc2626', fontSize: '12px', marginTop: '3px', display: 'block' }}>{errors.email.message}</span>}
-          </div>
+          {serverError && (
+            <div
+              role="alert"
+              style={{
+                background: 'var(--danger-soft)',
+                color: 'var(--danger)',
+                padding: '10px 14px',
+                borderRadius: 'var(--r-2)',
+                borderLeft: '3px solid var(--danger)',
+                fontSize: 14,
+                marginTop: 16,
+              }}
+            >
+              {serverError}
+            </div>
+          )}
 
-          <div style={{ marginBottom: '1.75rem' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '5px', fontSize: '14px', fontWeight: 500, color: '#374151' }}>Contraseña</label>
-            <input
-              id="password" type="password"
-              {...register('password', { required: 'La contraseña es obligatoria' })}
-              style={{ ...baseInput, ...(focused === 'password' ? focusStyle : blurStyle) }}
-              onFocus={() => setFocused('password')}
-              onBlur={() => setFocused(null)}
-              aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? 'pass-err' : undefined}
-            />
-            {errors.password && <span id="pass-err" style={{ color: '#dc2626', fontSize: '12px', marginTop: '3px', display: 'block' }}>{errors.password.message}</span>}
-          </div>
+          <form className="login-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <div className="field">
+              <label htmlFor="email">Correo electrónico</label>
+              <div className="input-wrap">
+                <Icon name="mail" size={16} className="leading-icon" />
+                <input
+                  id="email"
+                  type="email"
+                  className="input has-icon"
+                  placeholder="tu@correo.com"
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'email-err' : undefined}
+                  {...register('email', {
+                    required: 'El correo es obligatorio',
+                    pattern: { value: /^\S+@\S+$/i, message: 'Correo inválido' },
+                  })}
+                />
+              </div>
+              {errors.email && (
+                <span id="email-err" style={{ color: 'var(--danger)', fontSize: 12 }}>
+                  {errors.email.message}
+                </span>
+              )}
+            </div>
 
-          <button
-            type="submit" disabled={isSubmitting}
-            style={{ width: '100%', padding: '11px', background: isSubmitting ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 500, cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: 'background .15s' }}
-            onMouseOver={(e) => { if (!isSubmitting) e.currentTarget.style.background = '#1d4ed8'; }}
-            onMouseOut={(e) => { if (!isSubmitting) e.currentTarget.style.background = '#2563eb'; }}
-          >
-            {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
-          </button>
-        </form>
+            <div className="field">
+              <label htmlFor="password">Contraseña</label>
+              <div className="input-wrap">
+                <Icon name="lock" size={16} className="leading-icon" />
+                <input
+                  id="password"
+                  type={showPass ? 'text' : 'password'}
+                  className="input has-icon"
+                  placeholder="••••••••"
+                  style={{ paddingRight: 44 }}
+                  aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? 'pass-err' : undefined}
+                  {...register('password', { required: 'La contraseña es obligatoria' })}
+                />
+                <button
+                  type="button"
+                  className="iconbtn"
+                  style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)' }}
+                  onClick={() => setShowPass(v => !v)}
+                  aria-label={showPass ? 'Ocultar' : 'Mostrar'}
+                >
+                  <Icon name={showPass ? 'eyeOff' : 'eye'} size={16} />
+                </button>
+              </div>
+              {errors.password && (
+                <span id="pass-err" style={{ color: 'var(--danger)', fontSize: 12 }}>
+                  {errors.password.message}
+                </span>
+              )}
+            </div>
 
-        <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '14px', color: '#6b7280' }}>
-          ¿No tienes cuenta? <Link to="/register" style={{ color: '#2563eb', fontWeight: 500 }}>Regístrate</Link>
+            <button
+              type="submit"
+              className="btn accent full lg"
+              disabled={isSubmitting}
+              style={{ marginTop: 6 }}
+            >
+              {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              {!isSubmitting && <Icon name="arrowRight" size={16} />}
+            </button>
+          </form>
+        </div>
+
+        <p className="login-footer">
+          ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
         </p>
+      </div>
+
+      {/* Right: decorative */}
+      <div className="login-right" aria-hidden="true">
+        <div className="grain" />
+        <div className="login-meta">
+          <span>UserApp</span>
+          <span>v1.0</span>
+        </div>
+        <div className="login-quote">
+          <div className="qmark">"</div>
+          <blockquote>
+            Gestión de usuarios,<br />
+            <em>simple y elegante.</em>
+          </blockquote>
+          <p className="login-cite">— UserApp Platform</p>
+        </div>
+        <div className="login-meta">
+          <span>Acceso seguro</span>
+          <span>JWT · HS256</span>
+        </div>
       </div>
     </div>
   );
