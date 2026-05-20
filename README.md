@@ -1,23 +1,23 @@
-# UserApp — Auth + User CRUD
+# UserApp — Autenticación + CRUD de Usuarios
 
-Full-stack application with React 18 + Vite frontend and .NET 8 Clean Architecture backend, using SQL Server in Docker.
+Aplicación full-stack con frontend en React 18 + Vite y backend en .NET 8 Clean Architecture, usando SQL Server en Docker.
 
-## Prerequisites
+## Requisitos previos
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 18+](https://nodejs.org/)
-- dotnet-ef tool: `dotnet tool install --global dotnet-ef`
+- Herramienta dotnet-ef: `dotnet tool install --global dotnet-ef`
 
-## Quick Start
+## Inicio rápido
 
-### 1. Start SQL Server
+### 1. Iniciar SQL Server
 
 ```bash
 docker compose up -d
 ```
 
-### 2. Configure backend secrets
+### 2. Configurar secretos del backend
 
 ```bash
 cd backend/UserApp.Api
@@ -26,16 +26,16 @@ dotnet user-secrets set "Jwt:Key" "super-secret-jwt-key-that-is-at-least-32-char
 cd ../..
 ```
 
-### 3. Run the backend
+### 3. Ejecutar el backend
 
 ```bash
 cd backend
 dotnet run --project UserApp.Api/UserApp.Api.csproj
 ```
 
-API starts on `https://localhost:5001`. Migrations apply automatically. Seed data is inserted on first run.
+La API inicia en `https://localhost:5001`. Las migraciones se aplican automáticamente y los datos de prueba se insertan en el primer arranque.
 
-### 4. Run the frontend
+### 4. Ejecutar el frontend
 
 ```bash
 cd frontend
@@ -43,21 +43,21 @@ npm install
 npm run dev
 ```
 
-Frontend starts on `http://localhost:5173`.
+El frontend inicia en `http://localhost:5173`.
 
 ## Swagger
 
-Open `https://localhost:5001/swagger` to explore and test the API.
-Click **Authorize** and paste your access token from a login response.
+Abre `https://localhost:5001/swagger` para explorar y probar la API.
+Haz clic en **Authorize** y pega el access token obtenido al iniciar sesión.
 
-## Demo Credentials
+## Credenciales de prueba
 
-| Email | Password | Role |
+| Email | Contraseña | Rol |
 |---|---|---|
 | admin@demo.com | Admin123! | admin |
 | user@demo.com | User123! | user |
 
-## Run Tests
+## Ejecutar pruebas
 
 ```bash
 # Backend
@@ -67,28 +67,28 @@ cd backend && dotnet test
 cd frontend && npx vitest run
 ```
 
-## Environment Variables (frontend)
+## Variables de entorno (frontend)
 
-Copy `frontend/.env.example` to `frontend/.env` and update `VITE_API_BASE_URL` if your backend runs on a different port.
+Copia `frontend/.env.example` a `frontend/.env` y actualiza `VITE_API_BASE_URL` si el backend corre en un puerto diferente.
 
-## Architecture
+## Arquitectura
 
 ```
 backend/
-  UserApp.Api/           Controllers, JWT middleware, Swagger, CORS, Serilog
-  UserApp.Application/   Services, DTOs, interfaces, entities, exceptions
-  UserApp.Infrastructure/ EF Core, repositories, BCrypt, JWT token service, migrations
+  UserApp.Api/            Controladores, middleware JWT, Swagger, CORS, Serilog
+  UserApp.Application/    Servicios, DTOs, interfaces, entidades, excepciones
+  UserApp.Infrastructure/ EF Core, repositorios, BCrypt, servicio JWT, migraciones
 frontend/src/
-  api/                   Axios instance with token refresh interceptor
-  context/               AuthContext (user state, login/logout)
-  components/            Route guards, Layout navbar
-  pages/                 Login, Register, Users, UserForm, Profile
+  api/                    Instancia de Axios con interceptor de refresco de token
+  context/                AuthContext (estado del usuario, login/logout)
+  components/             Guards de rutas, navbar de Layout
+  pages/                  Login, Register, Users, UserForm, Profile
 ```
 
-## Security
+## Seguridad
 
-- Passwords hashed with BCrypt (salt embedded in hash)
-- JWT access tokens (HS256, 30-minute expiry)
-- Refresh tokens stored in database, rotated on use, revoked on logout
-- Role-based access: `admin` has full CRUD; `user` can only view and edit own profile
-- Soft delete: users are deactivated (`IsActive = false`), never physically removed
+- Contraseñas hasheadas con BCrypt (salt embebido en el hash)
+- Tokens de acceso JWT (HS256, expiración de 30 minutos)
+- Refresh tokens almacenados en base de datos, rotados en cada uso y revocados al cerrar sesión
+- Acceso por roles: `admin` tiene CRUD completo; `user` solo puede ver y editar su propio perfil
+- Borrado lógico: los usuarios se desactivan (`IsActive = false`), nunca se eliminan físicamente
