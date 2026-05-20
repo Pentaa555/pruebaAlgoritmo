@@ -28,15 +28,15 @@ export function LoginPage() {
       navigate(res.data.user.role === 'admin' ? '/users' : '/profile');
     } catch (err: unknown) {
       const e = err as { response?: { data?: { message?: string } } };
-      setServerError(e.response?.data?.message ?? 'Login failed. Please try again.');
+      setServerError(e.response?.data?.message ?? 'Error al iniciar sesión. Intenta de nuevo.');
     }
   };
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f3f4f6' }}>
       <div style={{ background: '#fff', padding: '2rem', borderRadius: '8px', boxShadow: '0 1px 6px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
-        <h1 style={{ color: '#1e3a8a', marginBottom: '0.25rem' }}>Sign in</h1>
-        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>Enter your credentials to continue</p>
+        <h1 style={{ color: '#1e3a8a', marginBottom: '0.25rem' }}>Iniciar sesión</h1>
+        <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>Ingresa tus credenciales para continuar</p>
 
         {serverError && (
           <div role="alert" style={{ background: '#fef2f2', color: '#991b1b', padding: '0.75rem', borderRadius: '4px', marginBottom: '1rem', fontSize: '14px' }}>
@@ -46,10 +46,10 @@ export function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Email</label>
+            <label htmlFor="email" style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Correo electrónico</label>
             <input
               id="email" type="email"
-              {...register('email', { required: 'Email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' } })}
+              {...register('email', { required: 'El correo es obligatorio', pattern: { value: /^\S+@\S+$/i, message: 'Correo inválido' } })}
               style={inputStyle} aria-invalid={!!errors.email}
               aria-describedby={errors.email ? 'email-err' : undefined}
             />
@@ -57,10 +57,10 @@ export function LoginPage() {
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Password</label>
+            <label htmlFor="password" style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Contraseña</label>
             <input
               id="password" type="password"
-              {...register('password', { required: 'Password is required' })}
+              {...register('password', { required: 'La contraseña es obligatoria' })}
               style={inputStyle} aria-invalid={!!errors.password}
               aria-describedby={errors.password ? 'pass-err' : undefined}
             />
@@ -71,12 +71,12 @@ export function LoginPage() {
             type="submit" disabled={isSubmitting}
             style={{ width: '100%', padding: '10px', background: isSubmitting ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '15px', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
           >
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
+            {isSubmitting ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '14px', color: '#6b7280' }}>
-          Don't have an account? <Link to="/register" style={{ color: '#2563eb' }}>Register</Link>
+          ¿No tienes cuenta? <Link to="/register" style={{ color: '#2563eb' }}>Regístrate</Link>
         </p>
       </div>
     </div>

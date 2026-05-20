@@ -25,7 +25,7 @@ export function Layout() {
         </span>
         {isAdmin() && (
           <Link to="/users" style={{ color: '#fff', textDecoration: 'none', marginRight: '1.5rem', fontSize: '14px' }}>
-            Users
+            Usuarios
           </Link>
         )}
         <Link to="/profile" style={{ color: '#fff', textDecoration: 'none', marginRight: '1.5rem', fontSize: '14px' }}>
@@ -35,7 +35,7 @@ export function Layout() {
           onClick={handleLogout}
           style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}
         >
-          Logout
+          Cerrar sesión
         </button>
       </nav>
       <main>
