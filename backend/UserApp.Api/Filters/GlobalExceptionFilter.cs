@@ -20,7 +20,7 @@ public class GlobalExceptionFilter(ILogger<GlobalExceptionFilter> logger) : IExc
         if (status == 500)
             logger.LogError(context.Exception, "Unhandled exception");
 
-        context.Result = new ObjectResult(new { status, message }) { StatusCode = status };
+        context.Result = new ObjectResult(new { status, message, errors = new { } }) { StatusCode = status };
         context.ExceptionHandled = true;
     }
 }

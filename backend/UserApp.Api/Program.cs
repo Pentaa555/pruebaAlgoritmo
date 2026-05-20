@@ -1,5 +1,8 @@
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -7,6 +10,7 @@ using Serilog;
 using UserApp.Api.Filters;
 using UserApp.Application.Interfaces;
 using UserApp.Application.Services;
+using UserApp.Application.Validators;
 using UserApp.Infrastructure.Data;
 using UserApp.Infrastructure.Repositories;
 using UserApp.Infrastructure.Services;
@@ -24,6 +28,24 @@ try
 
     builder.Services.AddDbContext<AppDbContext>(opt =>
         opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    builder.Services.AddFluentValidationAutoValidation();
+    builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+
+    builder.Services.Configure<ApiBehaviorOptions>(opt =>
+        opt.InvalidModelStateResponseFactory = ctx =>
+        {
+            var errors = ctx.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+            return new ObjectResult(new { status = 400, message = "Validation failed.", errors })
+            {
+                StatusCode = 400
+            };
+        });
 
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

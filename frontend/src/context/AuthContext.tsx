@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import api from '../api/axiosInstance';
+import axios from 'axios';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import api, { setAccessToken, BASE_URL } from '../api/axiosInstance';
 
 export interface AuthUser {
   id: string;
@@ -11,9 +12,11 @@ export interface AuthUser {
 interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
+  isInitializing: boolean;
 }
 
-interface AuthContextValue extends AuthState {
+interface AuthContextValue extends Omit<AuthState, 'isInitializing'> {
+  isInitializing: boolean;
   login: (accessToken: string, refreshToken: string, user: AuthUser) => void;
   logout: () => Promise<void>;
   updateUser: (updated: Partial<AuthUser>) => void;
@@ -23,19 +26,35 @@ interface AuthContextValue extends AuthState {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(() => ({
-    accessToken: sessionStorage.getItem('accessToken'),
-    user: (() => {
-      const u = sessionStorage.getItem('user');
-      return u ? (JSON.parse(u) as AuthUser) : null;
-    })(),
-  }));
+  const [state, setState] = useState<AuthState>({
+    accessToken: null,
+    user: null,
+    isInitializing: true,
+  });
+
+  useEffect(() => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      setState(s => ({ ...s, isInitializing: false }));
+      return;
+    }
+    axios
+      .post(`${BASE_URL}/api/auth/refresh`, { refreshToken })
+      .then(({ data }) => {
+        setAccessToken(data.accessToken);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setState({ accessToken: data.accessToken, user: data.user, isInitializing: false });
+      })
+      .catch(() => {
+        localStorage.removeItem('refreshToken');
+        setState({ accessToken: null, user: null, isInitializing: false });
+      });
+  }, []);
 
   const login = (accessToken: string, refreshToken: string, user: AuthUser) => {
-    sessionStorage.setItem('accessToken', accessToken);
-    sessionStorage.setItem('user', JSON.stringify(user));
+    setAccessToken(accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-    setState({ accessToken, user });
+    setState({ accessToken, user, isInitializing: false });
   };
 
   const logout = async () => {
@@ -45,16 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await api.post('/api/auth/logout', { refreshToken });
       } catch {}
     }
-    sessionStorage.clear();
+    setAccessToken(null);
     localStorage.removeItem('refreshToken');
-    setState({ accessToken: null, user: null });
+    setState({ accessToken: null, user: null, isInitializing: false });
   };
 
   const updateUser = (updated: Partial<AuthUser>) => {
     if (!state.user) return;
-    const newUser = { ...state.user, ...updated };
-    sessionStorage.setItem('user', JSON.stringify(newUser));
-    setState((prev) => ({ ...prev, user: newUser }));
+    setState(prev => ({ ...prev, user: { ...prev.user!, ...updated } }));
   };
 
   const isAdmin = () => state.user?.role === 'admin';
