@@ -140,4 +140,15 @@ public class UserServiceTests
 
         _userRepo.Verify(r => r.UpdateAsync(It.Is<User>(u => u.PasswordHash == "adminhash")), Times.Once);
     }
+
+    [Fact]
+    public async Task GetAllAsync_WithRoleAndIsActiveFilter_PassesParamsToRepository()
+    {
+        _userRepo.Setup(r => r.GetPagedAsync(null, "admin", true, 1, 10))
+                 .ReturnsAsync((Enumerable.Empty<User>(), 0));
+
+        await _sut.GetAllAsync(null, "admin", true, 1, 10);
+
+        _userRepo.Verify(r => r.GetPagedAsync(null, "admin", true, 1, 10), Times.Once);
+    }
 }

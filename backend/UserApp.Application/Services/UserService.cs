@@ -8,9 +8,10 @@ namespace UserApp.Application.Services;
 
 public class UserService(IUserRepository users, IPasswordService password) : IUserService
 {
-    public async Task<PagedResult<UserDto>> GetAllAsync(string? search, int page, int size)
+    public async Task<PagedResult<UserDto>> GetAllAsync(
+        string? search, string? role, bool? isActive, int page, int size)
     {
-        var (items, total) = await users.GetPagedAsync(search, page, size);
+        var (items, total) = await users.GetPagedAsync(search, role, isActive, page, size);
         var dtos = items.Select(ToDto);
         return new PagedResult<UserDto>(dtos, total, page, size);
     }

@@ -5,7 +5,8 @@ public interface IUserRepository
 {
     Task<User?> GetByIdAsync(Guid id);
     Task<User?> GetByEmailAsync(string email);
-    Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(string? search, int page, int size);
+    Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(
+        string? search, string? role, bool? isActive, int page, int size);
     Task AddAsync(User user);
     Task UpdateAsync(User user);
     Task SaveChangesAsync();

@@ -13,12 +13,19 @@ public class UserRepository(AppDbContext db) : IUserRepository
     public Task<User?> GetByEmailAsync(string email) =>
         db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-    public async Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(string? search, int page, int size)
+    public async Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(
+        string? search, string? role, bool? isActive, int page, int size)
     {
-        var query = db.Users.Where(u => u.IsActive);
+        var query = db.Users.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(u => u.Name.Contains(search) || u.Email.Contains(search));
+
+        if (role != null)
+            query = query.Where(u => u.Role == role);
+
+        if (isActive.HasValue)
+            query = query.Where(u => u.IsActive == isActive.Value);
 
         var total = await query.CountAsync();
         var items = await query

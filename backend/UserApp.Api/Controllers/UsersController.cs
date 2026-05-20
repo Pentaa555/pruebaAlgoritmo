@@ -22,10 +22,12 @@ public class UsersController(IUserService userService) : ControllerBase
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? search,
+        [FromQuery] string? role,
+        [FromQuery] bool? isActive,
         [FromQuery] int page = 1,
         [FromQuery] int size = 10)
     {
-        var result = await userService.GetAllAsync(search, page, size);
+        var result = await userService.GetAllAsync(search, role, isActive, page, size);
         return Ok(result);
     }
 
