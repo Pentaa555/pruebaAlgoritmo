@@ -16,12 +16,12 @@ public class UserRepository(AppDbContext db) : IUserRepository
     public async Task<(IEnumerable<User> Items, int Total)> GetPagedAsync(
         string? search, string? role, bool? isActive, int page, int size)
     {
-        var query = db.Users.AsQueryable();
+        var query = db.Users.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(u => u.Name.Contains(search) || u.Email.Contains(search));
 
-        if (role != null)
+        if (!string.IsNullOrWhiteSpace(role))
             query = query.Where(u => u.Role == role);
 
         if (isActive.HasValue)
@@ -29,7 +29,6 @@ public class UserRepository(AppDbContext db) : IUserRepository
 
         var total = await query.CountAsync();
         var items = await query
-            .AsNoTracking()
             .OrderBy(u => u.Name)
             .Skip((page - 1) * size)
             .Take(size)
